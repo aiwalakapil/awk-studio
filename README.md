@@ -29,6 +29,10 @@ Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram
 |---|---|
 | `awk-carousel` | Instagram carousel (1080×1350 PNG slides) + animated video carousel from one JSON |
 | `awk-finance-edit` | Recipe: raw finance talking head → reel with ₹ counters, charts, ticker, bank notifications, checklist |
+| `awk-intro-3d` | 6-second 3D intros: flying metal letters + ring, or a spinning gold ₹ coin (16:9 / 9:16, with SFX) |
+| `awk-whiteboard` | Whiteboard explainer from JSON: hand-written words, doodles, marker hand, page pans, voice-timed |
+| `awk-cartoon-episode` | Kids cartoon episode from your Remotion cartoon template (scaffold + full production brief) |
+| `awk-documentary` | Narrated documentary kit: fact-check log, script, shot list, licences, publishing, shorts plan |
 
 A typical reel: `auto-cut → auto-zoom → effects → captions → sfx → audio-master → multi-export`.
 Face tracking and the person matte use Apple Vision on your Mac (no upload, no API key).

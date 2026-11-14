@@ -6,6 +6,8 @@ import {Captions, CaptionProps, StepClip, StepClipProps, INTRO} from './clips';
 import {FxLayer, FxLayerProps} from './fx';
 import {Reframe, ReframeProps} from './reframe';
 import {Carousel, CarouselProps, SLIDE_F} from './carousel';
+import {Whiteboard, WhiteboardProps} from './whiteboard';
+import {Logo3D, Logo3DProps, LOGO3D_LEN, Coin3D, Coin3DProps, COIN3D_LEN, defaultLogo} from './three3d';
 
 const W = 1920, H = 1080;
 
@@ -47,5 +49,13 @@ export const Root: React.FC = () => (
 		<Composition id="Carousel" component={Carousel} fps={FPS} width={1080} height={1350} durationInFrames={300}
 			defaultProps={{slides: [{type: 'hook', title: 'Ek prompt, 7 slides', chip: 'DAY 9'}, {type: 'cta', title: 'Save karo'}], series: 'AI WALA KAPIL'} as CarouselProps}
 			calculateMetadata={({props}) => ({durationInFrames: props.slides.length * SLIDE_F + 60})} />
+		{/* ---- 3D intros (props: text, colours; size from --width/--height) ---- */}
+		<Composition id="Logo3D" component={Logo3D} durationInFrames={LOGO3D_LEN} fps={FPS} width={W} height={H} defaultProps={defaultLogo as Logo3DProps} />
+		<Composition id="Logo3DVertical" component={Logo3D} durationInFrames={LOGO3D_LEN} fps={FPS} width={1080} height={1920} defaultProps={defaultLogo as Logo3DProps} />
+		<Composition id="Coin3D" component={Coin3D} durationInFrames={COIN3D_LEN} fps={FPS} width={W} height={H} defaultProps={{line1: 'FINANCE', line2: 'WITH HIMANSH'} as Coin3DProps} />
+		<Composition id="Coin3DVertical" component={Coin3D} durationInFrames={COIN3D_LEN} fps={FPS} width={1080} height={1920} defaultProps={{line1: 'FINANCE', line2: 'WITH HIMANSH'} as Coin3DProps} />
+		<Composition id="Whiteboard" component={Whiteboard} fps={FPS} width={W} height={H} durationInFrames={300}
+			defaultProps={{items: [], duration: 10, width: W, height: H} as WhiteboardProps}
+			calculateMetadata={({props}) => ({durationInFrames: Math.max(1, Math.ceil(props.duration * FPS)), width: props.width, height: props.height})} />
 	</>
 );

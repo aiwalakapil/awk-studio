@@ -12,6 +12,7 @@ SFX = {
     "whoosh":  ("0.5",  "anoisesrc=d=0.5:c=pink:r=48000:a=0.9,bandpass=f=1400:w=1800,afade=t=in:d=0.22:curve=exp,afade=t=out:st=0.22:d=0.28:curve=exp"),
     "whoosh2": ("0.9",  "anoisesrc=d=0.9:c=brown:r=48000:a=1,highpass=f=300,lowpass=f=5000,afade=t=in:d=0.45:curve=qsin,afade=t=out:st=0.45:d=0.45:curve=qsin,aecho=0.6:0.4:40:0.3"),
     "riser":   ("1.6",  "aevalsrc='0.35*sin(2*PI*(200*t+300*t*t))*t/1.6+0.25*(random(0)*2-1)*pow(t/1.6,2)':s=48000:d=1.6,afade=t=out:st=1.5:d=0.1"),
+    "marker":  ("2.0",  "anoisesrc=d=2:c=pink:r=48000:a=1,bandpass=f=3200:w=2600,tremolo=f=11:d=0.85,tremolo=f=3.3:d=0.5"),
     "hit":     ("0.8",  "aevalsrc='0.9*sin(2*PI*(55+90*exp(-20*t))*t)*exp(-5*t)+0.3*(random(0)*2-1)*exp(-40*t)':s=48000:d=0.8"),
 }
 for name, (d, src) in SFX.items():
