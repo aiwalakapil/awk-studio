@@ -15,7 +15,16 @@ Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram
 | `awk-course-look` | Renders intro sting, title card, chapter cards, step badges, win burst, lower third and end card |
 | `awk-eleven-script` | Converts a script to ElevenLabs Eleven v4 format and checks it before you spend credits |
 
-A typical reel: `auto-cut → captions → sfx → audio-master`.
+## Skills (Tier 2)
+| Skill | What it does |
+|---|---|
+| `awk-effects` | Text behind the head, glass widgets, spotlight, checklist, orbiting words, ₹ counter, iPhone notification, news cut, freeze-frame callout, bar chart, transitions — timed by seconds or by a spoken word |
+| `awk-auto-zoom` | Punch-in zooms on cuts and on chosen words, centred on the face |
+| `awk-reframe` | 16:9 → 9:16 / 1:1 / 4:5 that follows the speaker's face |
+| `awk-multi-export` | Instagram, YouTube Shorts (different endings), WhatsApp and 16:9 versions from one edit |
+
+A typical reel: `auto-cut → auto-zoom → effects → captions → sfx → audio-master → multi-export`.
+Face tracking and the person matte use Apple Vision on your Mac (no upload, no API key).
 
 ## Example
 Tell Claude Code:
@@ -49,6 +58,7 @@ Add your photos as `studio/public/brand/avatar.png` (round, 512×512) and `studi
 
 ## Requirements
 - [Claude Code](https://claude.com/claude-code) (needs a paid Claude plan)
+- macOS (Apple Vision for face tracking / matte; Xcode command line tools to build it)
 - ffmpeg, whisper.cpp, Node 18+, Python 3.9+
 - [Remotion](https://www.remotion.dev) is free for individuals and teams of up to 3 people; larger companies need a Remotion company license.
 

@@ -3,6 +3,8 @@ import {Composition} from 'remotion';
 import {BRAND, FPS} from './brand';
 import {IntroSting, TitleCard, ChapterCard, StepBadge, WinBurst, PhoneToLaptop, LowerThird, EndCard} from './look';
 import {Captions, CaptionProps, StepClip, StepClipProps, INTRO} from './clips';
+import {FxLayer, FxLayerProps} from './fx';
+import {Reframe, ReframeProps} from './reframe';
 
 const W = 1920, H = 1080;
 
@@ -33,5 +35,13 @@ export const Root: React.FC = () => (
 		<Composition id="StepClip" component={StepClip} fps={FPS} width={W} height={H} durationInFrames={300}
 			defaultProps={{src: '', start: 0, end: 10, step: 1, total: 1, title: 'Step', done: 'Ye ban gaya'} as StepClipProps}
 			calculateMetadata={({props}) => ({durationInFrames: INTRO + Math.max(1, Math.round((props.end - props.start) * FPS))})} />
+
+		{/* ---- effects layers (transparent, composited by effects.py) ---- */}
+		<Composition id="FxLayer" component={FxLayer} fps={FPS} width={1080} height={1920} durationInFrames={300}
+			defaultProps={{layer: 'front', cues: [], faces: [], duration: 10, width: 1080, height: 1920, src: ''} as FxLayerProps}
+			calculateMetadata={({props}) => ({durationInFrames: Math.max(1, Math.ceil(props.duration * FPS)), width: props.width, height: props.height})} />
+		<Composition id="Reframe" component={Reframe} fps={FPS} width={1080} height={1920} durationInFrames={300}
+			defaultProps={{src: '', srcW: 1920, srcH: 1080, faces: [], duration: 10, width: 1080, height: 1920} as ReframeProps}
+			calculateMetadata={({props}) => ({durationInFrames: Math.max(1, Math.ceil(props.duration * FPS)), width: props.width, height: props.height})} />
 	</>
 );

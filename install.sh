@@ -12,4 +12,5 @@ command -v whisper-cli >/dev/null || echo "!! install whisper.cpp: brew install 
 [ -f "${AWK_WHISPER_MODEL:-$HOME/whisper-models/ggml-large-v3-turbo.bin}" ] || echo "!! download the whisper model to ~/whisper-models/ggml-large-v3-turbo.bin (huggingface.co/ggerganov/whisper.cpp)"
 [ -d "$HERE/studio/node_modules" ] || (cd "$HERE/studio" && npm install)
 [ -f "$HERE/sfx/pop.wav" ] || python3 "$HERE/sfx/make_sfx.py"
+[ -x "$HERE/tools/awkvision" ] || xcrun swiftc -O -o "$HERE/tools/awkvision" "$HERE/tools/awkvision.swift" || echo "!! could not build tools/awkvision (install Xcode command line tools: xcode-select --install)"
 echo "done. Restart Claude Code, then try: /awk-auto-cut"

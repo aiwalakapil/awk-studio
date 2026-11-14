@@ -18,19 +18,6 @@ FILLERS = {"um", "umm", "uh", "uhh", "hmm", "hm", "ah", "अं", "अम", "ह
 FILLERS_N = {awk.norm(x) for x in FILLERS}
 
 
-def silences(src, noise_db, min_len):
-    """ffmpeg silencedetect -> [(start, end)]"""
-    import re, subprocess
-    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-vn", "-af",
-                        f"silencedetect=noise={noise_db}dB:d={min_len}", "-f", "null", "-"],
-                       capture_output=True, text=True, errors="replace")
-    st = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", r.stderr)]
-    en = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r.stderr)]
-    if len(en) < len(st):
-        en.append(awk.duration(src))
-    return list(zip(st, en))
-
-
 def is_retake(a, b):
     """True if phrase b looks like a fresh attempt at phrase a (same opening words)."""
     wa = [awk.norm(w["w"]) for w in a["words"]]
@@ -61,7 +48,7 @@ def main():
     words = awk.transcribe(src, a.lang)
     removed = []
     # speech regions = gaps between silences
-    sil = silences(src, a.noise, a.gap)
+    sil = awk.silences(src, a.noise, a.gap)
     regions, t0 = [], 0.0
     for s0, s1 in sil:
         if s0 - t0 > 0.05:
