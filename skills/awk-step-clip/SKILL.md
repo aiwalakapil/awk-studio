@@ -18,7 +18,7 @@ python3 ~/.claude/skills/awk-step-clip/scripts/stepclip.py LECTURE.mp4 --lecture
 `--only 3` renders one clip · `-d OUTDIR` (default `L09_steps/` next to the video).
 
 ## Workflow for Claude
-- Recording rule for Kapil: pause 1 sec and say "Step N" at every new step; then detection just works. If nothing is detected, build the steps file from the lecture's chapter list / transcript.
+- Recording rule: pause 1 sec and say "Step N" at every new step; then detection just works. If nothing is detected, build the steps file from the lecture's chapter list / transcript.
 - Write short titles ("Auto captions", "Cover in Canva") and a real result in `done` ("Captions ready", "Reel posted").
 - Run **awk-auto-cut** on the lecture first if it has long silences, then cut steps from the cut file.
 - Upload clips to an unlisted "Step Clips" playlist; link them in the lecture description.

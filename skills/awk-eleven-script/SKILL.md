@@ -5,7 +5,7 @@ description: Convert a Hinglish reel/lecture script into an ElevenLabs Eleven v4
 
 # ElevenLabs script (AI Wala Kapil Studio)
 
-Rules from guide Part J (they decide whether the voice sounds human).
+These rules decide whether the voice sounds human.
 
 ## Convert (Claude does this)
 1. Hindi words in **Devanagari**; English words (reel, caption, views, Claude, prompt, AI) stay **English**.
@@ -14,7 +14,6 @@ Rules from guide Part J (they decide whether the voice sounds human).
 4. Pauses: `…` short dramatic, `—` thinking, `।` end of sentence.
 5. **One paragraph** (Enter splits the editor into blocks). Use ` … ` where a new paragraph would go.
 6. Max 12–15 words per sentence.
-7. Till 14 Dec 2026: no "DM में भेज दूँगा" lines.
 
 ## Check
 ```bash

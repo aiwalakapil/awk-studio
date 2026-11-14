@@ -1,6 +1,10 @@
 import {loadFont as loadMontserrat} from '@remotion/google-fonts/Montserrat';
 import {loadFont as loadBaloo} from '@remotion/google-fonts/Baloo2';
 import {interpolate, spring, Easing} from 'remotion';
+import B_ from './brand.json';
+
+/** Edit src/brand.json to make the look yours (name, handle, colours, photos). */
+export const BRAND = B_;
 
 const M = loadMontserrat('normal', {weights: ['500', '700', '800', '900'], subsets: ['latin']}).fontFamily;
 const B = loadBaloo('normal', {weights: ['500', '700', '800'], subsets: ['latin', 'devanagari']}).fontFamily;
@@ -9,10 +13,10 @@ const B = loadBaloo('normal', {weights: ['500', '700', '800'], subsets: ['latin'
 export const FONT = `${M}, ${B}, sans-serif`;
 
 export const C = {
-	green: '#00E58F',
+	green: B_.colors.accent,
 	greenDeep: '#00A86B',
-	yellow: '#FFD84D',
-	ink: '#06110D',
+	yellow: B_.colors.accent2,
+	ink: B_.colors.ink,
 	ink2: '#0E1F18',
 	white: '#FFFFFF',
 	mute: 'rgba(255,255,255,0.72)',

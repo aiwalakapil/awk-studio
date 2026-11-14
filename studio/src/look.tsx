@@ -2,11 +2,24 @@
 // Overlays (StepBadge, WinBurst, LowerThird) have a transparent background so they
 // can sit on top of OBS scenes or any edit.
 import React from 'react';
-import {AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig, random} from 'remotion';
+import {AbsoluteFill, Img, getStaticFiles, interpolate, staticFile, useCurrentFrame, useVideoConfig, random} from 'remotion';
 
-export const AVATAR = staticFile('brand/Kapil_Avatar_Round_512.png');
-export const CUTOUT = staticFile('brand/Kapil_Cutout_Transparent.png');
-import {C, FONT, sp, ramp, glassPanel} from './brand';
+const has = (p: string) => getStaticFiles().some((f) => f.name === p);
+
+/** Round photo from brand.json, or initials in a ring if the file is missing. */
+export const Avatar: React.FC<{size: number; style?: React.CSSProperties}> = ({size, style}) =>
+	has(BRAND.avatar) ? (
+		<Img src={staticFile(BRAND.avatar)} style={{width: size, height: size, ...style}} />
+	) : (
+		<div style={{width: size, height: size, borderRadius: '50%', border: `${Math.max(3, size * 0.03)}px solid ${C.green}`, background: `radial-gradient(circle, ${C.greenDeep}, ${C.ink})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 900, fontSize: size * 0.42, color: C.white, ...style}}>
+			{BRAND.name.slice(0, 1).toUpperCase()}
+		</div>
+	);
+
+/** Cut-out photo, or a big avatar if there is no cut-out. */
+const Cutout: React.FC<{style: React.CSSProperties}> = ({style}) =>
+	has(BRAND.cutout) ? <Img src={staticFile(BRAND.cutout)} style={{height: 760, ...style}} /> : <Avatar size={460} style={{...style, bottom: 160}} />;
+import {BRAND, C, FONT, sp, ramp, glassPanel} from './brand';
 
 // ---------- shared bits ----------
 
@@ -62,12 +75,12 @@ export const IntroSting: React.FC = () => {
 			<AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
 				<div style={{position: 'absolute', width: 700 * ring, height: 700 * ring, borderRadius: '50%', border: `6px solid ${C.green}`, opacity: 1 - ring * 0.7, boxShadow: `0 0 80px ${C.green}`}} />
 				<div style={{transform: `scale(${0.6 + logo * 0.4})`, opacity: logo, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-					<Img src={AVATAR} style={{width: 260, height: 260, marginBottom: 20, transform: `scale(${sp(f, 4, 9)})`, filter: `drop-shadow(0 0 40px ${C.green}88)`}} />
+					<Avatar size={260} style={{marginBottom: 20, transform: `scale(${sp(f, 4, 9)})`, filter: `drop-shadow(0 0 40px ${C.green}88)`}} />
 					<div style={{fontFamily: FONT, fontWeight: 900, fontSize: 130, color: C.white, letterSpacing: -2, textShadow: `0 0 50px ${C.green}88`}}>
-						AI WALA <span style={{color: C.green}}>KAPIL</span>
+						{BRAND.title[0]} <span style={{color: C.green}}>{BRAND.title[1] ?? ''}</span>
 					</div>
 					<div style={{marginTop: 18, opacity: ramp(f, 30, 45)}}>
-						<Chip size={36}>AI CREATOR MASTERCLASS</Chip>
+						<Chip size={36}>{BRAND.tagline}</Chip>
 					</div>
 				</div>
 			</AbsoluteFill>
@@ -209,7 +222,7 @@ export const LowerThird: React.FC<{name: string; role: string}> = ({name, role})
 		<AbsoluteFill>
 			<div style={{position: 'absolute', left: 80, bottom: 150, overflow: 'hidden', width: 900 * w, borderRadius: 20}}>
 				<div style={{width: 900, padding: '18px 34px 18px 18px', ...glassPanel, borderLeft: `12px solid ${C.green}`, borderRadius: 20, display: 'flex', alignItems: 'center', gap: 24}}>
-					<Img src={AVATAR} style={{width: 110, height: 110}} />
+					<Avatar size={110} />
 					<div>
 					<div style={{fontFamily: FONT, fontWeight: 900, fontSize: 54, color: C.white}}>{name}</div>
 					<div style={{fontFamily: FONT, fontWeight: 700, fontSize: 30, color: C.green}}>{role}</div>
@@ -228,7 +241,7 @@ export const EndCard: React.FC<{next: string}> = ({next}) => {
 	return (
 		<AbsoluteFill>
 			<BrandBg />
-			<Img src={CUTOUT} style={{position: 'absolute', left: 40, bottom: 0, height: 760, transform: `translateY(${(1 - sp(f, 0, 14)) * 400}px)`, filter: `drop-shadow(0 0 50px ${C.green}66)`}} />
+			<Cutout style={{position: 'absolute', left: 40, bottom: 0, transform: `translateY(${(1 - sp(f, 0, 14)) * 400}px)`, filter: `drop-shadow(0 0 50px ${C.green}66)`}} />
 			<AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 50, paddingLeft: 640}}>
 				<Rise text="Aaj tumne bana liya!" size={92} />
 				<div style={{transform: `scale(${sub * pulse})`, padding: '28px 70px', borderRadius: 999, background: '#FF0033', color: C.white, fontFamily: FONT, fontWeight: 900, fontSize: 64, boxShadow: '0 20px 60px rgba(255,0,51,0.45)'}}>🔔 SUBSCRIBE</div>

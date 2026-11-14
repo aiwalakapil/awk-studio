@@ -5,7 +5,7 @@ description: Render the AI Creator Masterclass "Course Look" pack for a lecture 
 
 # Course Look (AI Wala Kapil Studio)
 
-Brand: green `#00E58F`, yellow `#FFD84D`, ink `#06110D`, Montserrat + Baloo 2 (Devanagari). Kapil's photo from `studio/public/brand/`.
+Name, title, tagline, colours and photos come from `studio/src/brand.json`. Photos: `studio/public/brand/avatar.png` (round, 512×512) and `cutout.png` (transparent PNG); without them a ring with your initial is used. Fonts: Montserrat + Baloo 2 (Devanagari).
 
 ## Run
 Write `L07.json`:

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Composition} from 'remotion';
-import {FPS} from './brand';
+import {BRAND, FPS} from './brand';
 import {IntroSting, TitleCard, ChapterCard, StepBadge, WinBurst, PhoneToLaptop, LowerThird, EndCard} from './look';
 import {Captions, CaptionProps, StepClip, StepClipProps, INTRO} from './clips';
 
@@ -20,7 +20,7 @@ export const Root: React.FC = () => (
 			defaultProps={{text: 'PROUD MOMENT!', sub: 'Tumne bana liya ✅'}} />
 		<Composition id="PhoneToLaptop" component={PhoneToLaptop} durationInFrames={90} fps={FPS} width={W} height={H} />
 		<Composition id="LowerThird" component={LowerThird} durationInFrames={150} fps={FPS} width={W} height={H}
-			defaultProps={{name: 'Kapil', role: 'AI Wala Kapil · @aiwalakapil'}} />
+			defaultProps={{name: BRAND.name, role: BRAND.role}} />
 		<Composition id="EndCard" component={EndCard} durationInFrames={180} fps={FPS} width={W} height={H}
 			defaultProps={{next: 'Growth System'}} />
 

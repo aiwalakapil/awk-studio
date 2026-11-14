@@ -5,7 +5,7 @@ description: Final audio mix for a video - clean the voice, add a music bed that
 
 # Audio master (AI Wala Kapil Studio)
 
-Same chain as the reels (guide Part K7).
+Same chain used on the AI Wala Kapil reels.
 
 ## Run
 ```bash
@@ -17,6 +17,6 @@ Options: `--music-vol 0.13` (≈13 %, voice stays on top) · `--music-start 12` 
 voice → highpass 80 Hz → light denoise (afftdn) → compressor 3:1 · music → loop to length → volume → fade in/out → sidechain duck under the voice · mix → measured gain to -14 LUFS → true-peak limiter. Video is copied untouched. Prints loudness before → after.
 
 ## Rules
-- Music only from licensed sources: Envato "Claim Clear" tracks (log in `Assets/Envato/LICENSES.md`), YouTube Audio Library, or Pixabay. Never commit music to the repo.
+- Music only from licensed sources: Envato "Claim Clear" tracks (keep a LICENSES.md log: track, author, where used), YouTube Audio Library, or Pixabay. Never commit music to the repo.
 - Always last in the chain (after captions and SFX).
 - If the voice was ElevenLabs, speed it 1.05–1.08x **before** this step (`atempo=1.06`).

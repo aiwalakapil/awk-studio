@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks a script against the ElevenLabs v4 rules (guide Part J5) before spending credits.
+"""Checks a script against the ElevenLabs v4 rules (Hinglish rules) before spending credits.
 
 Usage: check.py script.txt      (or:  echo "..." | check.py -)
 Exit code 1 if anything must be fixed.

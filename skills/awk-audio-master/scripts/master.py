@@ -5,7 +5,7 @@ Usage:
   master.py VIDEO [-o OUT] [--music track.mp3] [--music-vol 0.13] [--music-start 0]
                   [--no-denoise] [--lufs -14] [--tp -1.5]
 
-Chain (same as AI Wala Kapil reels, guide Part K7):
+Chain (same as the AI Wala Kapil reels):
   voice: highpass 80 Hz -> light denoise -> compressor 3:1
   music: loops if short, ~13% volume, fades, ducks under the voice (sidechain)
   mix -> two-pass loudnorm (-14 LUFS, true peak -1.5 dB) -> limiter

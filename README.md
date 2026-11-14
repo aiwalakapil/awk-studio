@@ -30,8 +30,22 @@ git clone https://github.com/aiwalakapil/awk-studio.git
 cd awk-studio && ./install.sh
 ```
 - **Whisper model:** download `ggml-large-v3-turbo.bin` from [huggingface.co/ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp) into `~/whisper-models/`, or point `AWK_WHISPER_MODEL` at it.
-- **Your photo:** put `Kapil_Avatar_Round_512.png` and `Kapil_Cutout_Transparent.png` (or your own, same names) in `studio/public/brand/`, or edit `studio/src/look.tsx`.
 - Restart Claude Code; the skills show up as `/awk-auto-cut`, `/awk-captions` and so on.
+
+## Make it yours
+Edit `studio/src/brand.json`:
+```json
+{
+  "name": "Your Name",
+  "role": "Your Channel · @yourhandle",
+  "title": ["YOUR", "CHANNEL"],
+  "tagline": "YOUR TAGLINE",
+  "avatar": "brand/avatar.png",
+  "cutout": "brand/cutout.png",
+  "colors": {"accent": "#00E58F", "accent2": "#FFD84D", "ink": "#06110D"}
+}
+```
+Add your photos as `studio/public/brand/avatar.png` (round, 512×512) and `studio/public/brand/cutout.png` (transparent PNG). No photos? The cards show your initial in a ring instead. Preview everything with `cd studio && npm run studio`.
 
 ## Requirements
 - [Claude Code](https://claude.com/claude-code) (needs a paid Claude plan)

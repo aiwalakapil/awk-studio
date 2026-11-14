@@ -8,7 +8,7 @@ lecture.json:
   {"lecture": 4, "title": "Editing + Cover", "result": "Pehli reel POST 🎉", "part": "BOOTCAMP",
    "next": "Growth System", "steps": ["Cuts", "Auto captions", "Text hook", "Music + SFX", "Cover", "POST"],
    "win": {"text": "PROUD MOMENT!", "sub": "Pehli reel live ✅"},
-   "name": "Kapil", "role": "AI Wala Kapil · @aiwalakapil"}
+   "name": "…", "role": "…"}          # optional; default comes from studio/src/brand.json
 
 Output (OUTDIR, default ./L04_look/):
   video  (mp4):  00_IntroSting, 01_TitleCard, Chapter_S01…, PhoneToLaptop, 99_EndCard
@@ -67,7 +67,8 @@ def main():
     if want("PhoneToLaptop"): jobs.append(("PhoneToLaptop", out / "PhoneToLaptop.mp4", {}, []))
     if want("WinBurst"): jobs.append(("WinBurst", out / "WinBurst.mov", L.get("win", {}), ALPHA))
     if want("LowerThird"):
-        jobs.append(("LowerThird", out / "LowerThird.mov", {"name": L.get("name", "Kapil"), "role": L.get("role", "AI Wala Kapil · @aiwalakapil")}, ALPHA))
+        brand = json.loads((awk.STUDIO / "src" / "brand.json").read_text())
+        jobs.append(("LowerThird", out / "LowerThird.mov", {"name": L.get("name", brand["name"]), "role": L.get("role", brand["role"])}, ALPHA))
     if want("EndCard"): jobs.append(("EndCard", out / "99_EndCard.mp4", end, []))
 
     for comp, path, props, extra in jobs:
