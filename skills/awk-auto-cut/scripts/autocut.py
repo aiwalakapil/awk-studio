@@ -52,7 +52,7 @@ def main():
     ap.add_argument("--no-retakes", action="store_true"); ap.add_argument("--no-fillers", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--crf", default="18")
-    ap.add_argument("--height", type=int, help="downscale output to this height (e.g. 1080 for 4K sources)")
+    ap.add_argument("--height", type=int, help="downscale so the SHORT side is this (1080 -> 1080x1920 reel / 1920x1080)")
     a = ap.parse_args()
 
     src = Path(a.input).resolve()
@@ -127,7 +127,8 @@ def main():
     vout = "[vc]" if a.height else "[v]"
     lines.append(f"{ins}concat=n={len(segs)}:v=1:a={1 if has_a else 0}{vout}" + ("[a]" if has_a else "") + (";" if a.height else ""))
     if a.height:
-        lines.append(f"[vc]scale=-2:{a.height}:flags=lanczos[v]")
+        h = a.height  # short side: 1080 -> 1920x1080 or 1080x1920
+        lines.append(f"[vc]scale='if(gt(iw,ih),-2,{h})':'if(gt(iw,ih),{h},-2)':flags=lanczos[v]")
     script = Path(str(out) + ".filter.txt"); script.write_text("\n".join(lines))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-stats", "-i", src, "-/filter_complex", script, "-map", "[v]"]
     if has_a:
