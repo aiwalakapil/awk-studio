@@ -23,15 +23,19 @@ FX_DOC = {
     "glass-widgets":  ("front",  "Floating glass cards around the person.  items: [{icon,title,value}] (max 4)"),
     "spotlight":      ("front",  "Dims everything except a circle on the face.  label, glitter: true, x/y (0-1) or face, r"),
     "checklist":      ("front",  "Glass list that ticks items one by one.  title, items: [..], every: sec, strike: true, y"),
-    "orbit-text":     ("both",   "Words orbit around the head (pass behind it).  text: 'A · B · C', radius, speed"),
+    "orbit-text":     ("both",   "Words OR photos orbit the head (pass behind it).  text: 'A · B · C' | images: [paths], size: 0.2, radius, speed"),
     "money-counter":  ("front",  "Number counts up.  from, to, prefix: '₹', suffix, label, count: sec, color, y"),
     "iphone-ui":      ("front",  "iOS notification or toggle.  kind: notification|toggle, app, title, body, icon, when"),
     "news-cut":       ("front",  "Breaking-news look with flash, banner and ticker.  tag, headline, ticker"),
     "freeze-callout": ("front",  "Freeze frame + name label (character intro).  name, sub"),
     "chart":          ("front",  "Bars grow in a glass card.  title, bars: [{label,value}], prefix, suffix, y"),
-    "transition":     ("front",  "kind: zoom-punch | zoom-through | whip | shake | glitch | flash | light-leak (dur 0.3-0.6)"),
+    "transition":     ("front",  "kind: zoom-punch | zoom-through | whip | shake | glitch | flash | light-leak | zoom-hold (dur 0.3-0.6)"),
+    "edit-timeline":  ("front",  "Editing-app timeline with tracks and a moving playhead.  title, tracks, seconds, y"),
+    "clone":          ("clone",  "Copies of the person appear beside them, a moment behind in time.  count: 2, lag: 0.5, spread: 0.3, scale: 0.85"),
+    "photo-3d":       ("front",  "Full-screen 2.5D parallax of a photo (subject cut out automatically).  photo: path, label, direction: 1|-1"),
+    "map-flyto":      ("front",  "Fly into a point of any map image and drop a pin.  image: path, x, y (0-1), zoom: 3, label"),
 }
-NEEDS_FACE = {"spotlight", "orbit-text", "glass-widgets", "freeze-callout"}
+NEEDS_FACE = {"spotlight", "orbit-text", "glass-widgets", "freeze-callout", "title-behind"}
 NEEDS_SRC = {"transition", "news-cut"}
 
 
@@ -49,6 +53,22 @@ def resolve_t(t, words):
         if awk.word_match(word, w["w"]):
             return max(0.0, w["s"] + off)
     raise SystemExit(f"word '{word}' not heard in the video (check the transcript, or use seconds)")
+
+
+def photo_layers(photo, w, h):
+    """Background + cut-out subject PNGs (Apple Vision matte), both cover-cropped to the video size."""
+    d = awk.STUDIO / "public" / "_in"; d.mkdir(parents=True, exist_ok=True)
+    stem = photo.stem.replace(" ", "_")
+    bg, fg = d / f"{stem}_p3d_bg.png", d / f"{stem}_p3d_fg.png"
+    if not (bg.exists() and fg.exists()):
+        cover = f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}"
+        awk.run(["ffmpeg", "-y", "-loglevel", "error", "-i", photo, "-vf", cover, "-frames:v", "1", bg])
+        clip = d / f"{stem}_p3d.mp4"
+        awk.run(["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", bg, "-t", "0.2", "-r", "30", "-pix_fmt", "yuv420p", clip])
+        mask, _ = awk.vision(clip, False)
+        awk.run(["ffmpeg", "-y", "-loglevel", "error", "-i", bg, "-i", mask, "-filter_complex",
+                 "[1:v]format=gray,boxblur=1:1[m];[0:v][m]alphamerge", "-frames:v", "1", fg])
+    return f"_in/{bg.name}", f"_in/{fg.name}"
 
 
 def main():
@@ -79,12 +99,24 @@ def main():
     cues.sort(key=lambda c: c["t"])
 
     behind = any(FX_DOC[c["fx"]][0] in ("behind", "both") for c in cues)
-    need_face = behind or any(c["fx"] in NEEDS_FACE for c in cues)
+    clones = [c for c in cues if c["fx"] == "clone"]
+    need_face = behind or clones or any(c["fx"] in NEEDS_FACE for c in cues)
     mask = faces = None
     if need_face:
         mask, faces_json = awk.vision(src, a.fast_matte)
         faces = awk.face_track(faces_json, dur)
     staged = awk.stage(src) if any(c["fx"] in NEEDS_SRC for c in cues) else ""
+    for c in cues:   # local images used by effects -> Remotion public/_in
+        pr = c["props"]
+        if isinstance(pr.get("images"), list):
+            pr["images"] = [awk.stage(Path(x).expanduser().resolve()) for x in pr["images"]]
+        if pr.get("image") and Path(str(pr["image"])).expanduser().exists():
+            ip = Path(pr["image"]).expanduser().resolve()
+            iw, ih = awk.video_size(ip)
+            pr.setdefault("aspect", iw / ih)
+            pr["image"] = awk.stage(ip)
+        if c["fx"] == "photo-3d":
+            pr["bg"], pr["fg"] = photo_layers(Path(pr["photo"]).expanduser().resolve(), w, h)
     for c in cues:   # freeze frames: grab the still
         if c["fx"] == "freeze-callout":
             png = awk.STUDIO / "public" / "_in" / f"{src.stem}_freeze_{c['t']:.2f}.png"
@@ -122,17 +154,30 @@ def main():
         awk.remotion_render("FxLayer", files[layer], {**base, "layer": layer}, alpha)
         print("  ✓ layer", layer)
 
-    ins = ["-i", str(src)]; g = []; cur = "[0:v]"
+    ins = ["-i", str(src)]; g = []; cur = "[vb]"
+    matte = "behind" in files or bool(clones)
+    copies = [(c, k) for c in clones for k in range(1, int(c["props"].get("count", 2)) + 1)]
+    vs = ["[vb]"] + (["[vcut]"] if matte else []) + [f"[vc{i}]" for i in range(len(copies))]
+    g.append(f"[0:v]split={len(vs)}{''.join(vs)}" if len(vs) > 1 else "[0:v]null[vb]")
     if "behind" in files:
-        ins += ["-i", str(files["behind"]), "-i", str(mask)]
-        g += [f"[0:v]split=2[v0][v1]", f"[v0][1:v]overlay=eof_action=pass[b]",
-              f"[2:v]format=gray,scale={w}:{h},boxblur=2:1[m]", "[v1][m]alphamerge[fg]", "[b][fg]overlay=eof_action=pass[x]"]
-        cur = "[x]"
+        ins += ["-i", str(files["behind"])]
+        g.append(f"{cur}[{len(ins) // 2 - 1}:v]overlay=eof_action=pass[b]"); cur = "[b]"
+    if matte:
+        ins += ["-i", str(mask)]
+        ms = ["[mcut]"] + [f"[mc{i}]" for i in range(len(copies))]
+        g.append(f"[{len(ins) // 2 - 1}:v]format=gray,scale={w}:{h},boxblur=2:1" + (f",split={len(ms)}{''.join(ms)}" if len(ms) > 1 else "[mcut]"))
+        for i, (c, k) in enumerate(copies):
+            pr = c["props"]; lag = float(pr.get("lag", 0.5)) * k; sc = float(pr.get("scale", 0.85)) ** k
+            off = (1 if k % 2 else -1) * float(pr.get("spread", 0.3)) * w * ((k + 1) // 2)
+            t0, t1 = c["t"], c["t"] + c["dur"]
+            g.append(f"[vc{i}][mc{i}]alphamerge,setpts=PTS+{lag:.3f}/TB,scale=iw*{sc:.3f}:-2,colorchannelmixer=aa=0.92[cl{i}]")
+            g.append(f"{cur}[cl{i}]overlay=x=(W-w)/2+{off:.0f}:y=H-h:eof_action=pass:enable='between(t,{t0:.3f},{t1:.3f})'[k{i}]"); cur = f"[k{i}]"
+        g.append("[vcut][mcut]alphamerge[fg]")
+        g.append(f"{cur}[fg]overlay=eof_action=pass[x]"); cur = "[x]"
     if "front" in files:
-        idx = len(ins) // 2
         ins += ["-i", str(files["front"])]
-        g.append(f"{cur}[{idx}:v]overlay=eof_action=pass[y]"); cur = "[y]"
-    if not g:
+        g.append(f"{cur}[{len(ins) // 2 - 1}:v]overlay=eof_action=pass[y]"); cur = "[y]"
+    if len(g) == 1:
         raise SystemExit("nothing to render")
     g[-1] = g[-1][: g[-1].rindex("[")] + "[vout]"
     awk.run(["ffmpeg", "-y", "-loglevel", "error", "-stats", *ins, "-filter_complex", ";".join(g), "-map", "[vout]", "-map", "0:a?",

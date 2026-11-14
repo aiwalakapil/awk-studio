@@ -19,10 +19,13 @@ const TitleBehind: React.FC<FxArgs> = ({p, f, d, face}) => {
 	const {width, height} = useVideoConfig();
 	const words: string[] = String(p.text ?? 'TEXT').split('|');
 	const longest = Math.max(...words.map((w) => w.length));
-	const size = p.size ?? Math.round(Math.min(width * 0.28, (width * 1.22) / Math.max(4, longest)));
+	// the text block ends a little below the top of the face, so the hair/head covers its lower part
+	const faceTop = face ? face[1] - face[2] * 0.5 : height * 0.3;
+	const bottom = faceTop + (face ? face[2] * 0.08 : 0);
+	const room = bottom - height * 0.035;
+	const size = p.size ?? Math.round(Math.min(width * 0.28, (width * 1.22) / Math.max(4, longest), room / (0.92 * words.length)));
 	const blockH = size * 0.92 * words.length;
-	// bottom of the text block sits ~45% into the head, so the head covers it
-	const top = p.y != null ? height * p.y - blockH / 2 : face ? face[1] - face[2] * 0.5 + face[2] * 0.45 - blockH : height * 0.27 - blockH / 2;
+	const top = p.y != null ? height * p.y - blockH / 2 : bottom - blockH;
 	const o = inOut(f, d, 6, 10);
 	return (
 		<AbsoluteFill style={{alignItems: 'center', justifyContent: 'flex-start', paddingTop: Math.max(height * 0.04, top), opacity: o}}>
@@ -111,7 +114,7 @@ const Checklist: React.FC<FxArgs> = ({p, f, d}) => {
 	const o = inOut(f, d, 8, 10);
 	return (
 		<AbsoluteFill style={{alignItems: 'center', justifyContent: 'flex-start', paddingTop: height * (p.y ?? 0.12), opacity: o}}>
-			<div style={{width: 820 * unit, padding: 36 * unit, borderRadius: 40 * unit, ...glass, transform: `scale(${0.9 + 0.1 * sp(f, 0)})`}}>
+			<div style={{width: 820 * unit, padding: 36 * unit, borderRadius: 40 * unit, ...glass, background: `rgba(6,17,13,${p.opacity ?? 0.97})`, transform: `scale(${0.9 + 0.1 * sp(f, 0)})`}}>
 				{p.title ? <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 54 * unit, color: C.white, marginBottom: 18 * unit}}>{p.title}</div> : null}
 				{items.map((it, i) => {
 					const tickF = 12 + i * gap;
@@ -131,25 +134,39 @@ const Checklist: React.FC<FxArgs> = ({p, f, d}) => {
 	);
 };
 
-// ---------------------------------------------------------------- orbit-text (both layers)
+// ---------------------------------------------------------------- orbit-text / orbit photos (both layers)
 const Orbit: React.FC<FxArgs> = ({p, f, d, face, layer}) => {
 	const {width, height} = useVideoConfig();
-	const words: string[] = String(p.text ?? 'AI · REELS · GROWTH').split(/\s*·\s*|\s*\|\s*/);
+	const images: string[] = p.images ?? [];
+	const words: string[] = images.length ? images : String(p.text ?? 'AI · REELS · GROWTH').split(/\s*·\s*|\s*\|\s*/);
 	const cx = face ? face[0] : width / 2;
 	const cy = face ? face[1] : height * 0.35;
-	const R = (face ? face[2] : width * 0.2) * (p.radius ?? 1.25);
+	const R = (face ? face[2] : width * 0.2) * (p.radius ?? (images.length ? 1.45 : 1.25));
 	const o = inOut(f, d, 10, 10);
-	const speed = p.speed ?? 0.035;
+	const speed = p.speed ?? (images.length ? 0.028 : 0.035);
 	const n = Math.max(3, words.length);
+	const card = (p.size ?? 0.2) * width;
+	const items = words.map((w, i) => {
+		const a = f * speed + (i / n) * Math.PI * 2;
+		const z = Math.sin(a); // >0 = near side (in front of the head)
+		return {w, i, a, z};
+	}).sort((x, y) => x.z - y.z);
 	return (
 		<AbsoluteFill style={{opacity: o}}>
-			{words.map((w, i) => {
-				const a = f * speed + (i / n) * Math.PI * 2;
-				const z = Math.sin(a); // >0 = near side
+			{items.map(({w, i, a, z}) => {
 				if ((layer === 'front') !== z > 0) return null;
-				const x = cx + Math.cos(a) * R * 1.6;
+				const Rx = Math.min(R * 1.6, Math.min(cx, width - cx) + (images.length ? card * 0.35 : width * 0.08));
+				const x = cx + Math.cos(a) * Rx;
 				const y = cy + z * R * 0.35 - R * 0.1;
-				const s = 0.75 + 0.25 * (z + 1) / 2;
+				const s = 0.62 + 0.38 * (z + 1) / 2;
+				const pop = sp(f, i * 3, 12);
+				if (images.length) {
+					return (
+						<div key={i} style={{position: 'absolute', left: x, top: y, width: card, height: card * 1.18, transform: `translate(-50%,-50%) scale(${s * pop}) rotate(${Math.cos(a) * -8}deg)`, borderRadius: card * 0.12, overflow: 'hidden', border: `${Math.max(4, card * 0.03)}px solid ${C.white}`, boxShadow: `0 ${card * 0.08}px ${card * 0.2}px rgba(0,0,0,0.45)`, filter: `brightness(${0.7 + 0.3 * (z + 1) / 2})`}}>
+							<Img src={staticFile(w)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+						</div>
+					);
+				}
 				return (
 					<div key={i} style={{position: 'absolute', left: x, top: y, transform: `translate(-50%,-50%) scale(${s})`, fontFamily: FONT, fontWeight: 900, fontSize: width * 0.055, color: i % 2 ? C.yellow : C.green, whiteSpace: 'nowrap', textShadow: '0 4px 14px rgba(0,0,0,0.5)', opacity: 0.55 + 0.45 * (z + 1) / 2}}>
 						{w}
@@ -329,6 +346,90 @@ const Transition: React.FC<FxArgs> = ({p, f, d, src, t0, face}) => {
 	);
 };
 
+// ---------------------------------------------------------------- edit-timeline (fake NLE timeline with moving playhead)
+const EditTimeline: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	const unit = width / 1080;
+	const o = inOut(f, d, 8, 10);
+	const rise = sp(f, 0, 14);
+	const tracks: {name: string; clips: [number, number, string][]}[] = p.tracks ?? [
+		{name: 'V2', clips: [[0.05, 0.3, 'Title'], [0.55, 0.85, 'Glass']]},
+		{name: 'V1', clips: [[0, 0.33, 'Hook'], [0.34, 0.66, 'Demo'], [0.67, 1, 'CTA']]},
+		{name: 'A1', clips: [[0, 1, 'Voice']]},
+		{name: 'A2', clips: [[0, 1, 'Music']]},
+	];
+	const W = 960 * unit, rowH = 64 * unit;
+	const head = interpolate(f, [6, d - 6], [0.02, 0.98], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+	const cols = [C.green, '#7C9CFF', '#FFB547', '#FF6B9A'];
+	return (
+		<AbsoluteFill style={{opacity: o}}>
+			<div style={{position: 'absolute', left: (width - W) / 2, top: height * (p.y ?? 0.6) + (1 - rise) * 200 * unit, width: W, padding: 18 * unit, borderRadius: 26 * unit, background: 'rgba(16,18,22,0.92)', border: '2px solid rgba(255,255,255,0.12)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'}}>
+				<div style={{display: 'flex', justifyContent: 'space-between', fontFamily: FONT, fontWeight: 800, fontSize: 24 * unit, color: C.mute, marginBottom: 10 * unit}}>
+					<span>{p.title ?? '🎬 Claude Code · timeline'}</span><span style={{color: C.green}}>{`00:${String(Math.floor(head * (p.seconds ?? 30))).padStart(2, '0')}`}</span>
+				</div>
+				<div style={{position: 'relative'}}>
+					{tracks.map((t, r) => (
+						<div key={r} style={{display: 'flex', alignItems: 'center', height: rowH, gap: 10 * unit}}>
+							<div style={{width: 56 * unit, fontFamily: FONT, fontWeight: 800, fontSize: 22 * unit, color: C.mute}}>{t.name}</div>
+							<div style={{position: 'relative', flex: 1, height: rowH * 0.74, background: 'rgba(255,255,255,0.05)', borderRadius: 8 * unit}}>
+								{t.clips.map(([a0, a1, label], k) => {
+									const g = sp(f, 4 + r * 4 + k * 3, 14);
+									return (
+										<div key={k} style={{position: 'absolute', left: `${a0 * 100}%`, width: `${(a1 - a0) * 100 * g}%`, top: 0, bottom: 0, borderRadius: 8 * unit, background: cols[r % 4] + (r >= 2 ? '55' : 'cc'), border: `2px solid ${cols[r % 4]}`, overflow: 'hidden', fontFamily: FONT, fontWeight: 800, fontSize: 20 * unit, color: r >= 2 ? C.white : C.ink, paddingLeft: 8 * unit, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap'}}>
+											{r >= 2 ? <span style={{opacity: 0.9}}>{'▁▃▅▇▅▃▁▂▄▆▄▂'.repeat(4)}</span> : label}
+										</div>
+									);
+								})}
+							</div>
+						</div>
+					))}
+					<div style={{position: 'absolute', top: 0, bottom: 0, left: `calc(${66 * unit}px + (100% - ${66 * unit}px) * ${head})`, width: 4 * unit, background: '#FF3B30', boxShadow: '0 0 12px #FF3B30'}} />
+				</div>
+			</div>
+		</AbsoluteFill>
+	);
+};
+
+// ---------------------------------------------------------------- photo-3d (2.5D parallax from a photo + its cut-out)
+const Photo3D: React.FC<FxArgs> = ({p, f, d}) => {
+	const k = f / Math.max(1, d);
+	const o = inOut(f, d, 8, 8);
+	const dir = p.direction ?? 1;
+	return (
+		<AbsoluteFill style={{opacity: o, overflow: 'hidden', background: C.ink}}>
+			<Img src={staticFile(p.bg)} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.08 + 0.06 * k}) translateX(${dir * (k - 0.5) * -3}%)`, filter: 'blur(1.5px) brightness(0.85)'}} />
+			<Img src={staticFile(p.fg)} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.04 + 0.16 * k}) translateX(${dir * (k - 0.5) * 4}%)`, filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.5))'}} />
+			{p.label ? <div style={{position: 'absolute', left: 0, right: 0, bottom: '14%', textAlign: 'center'}}><span style={{fontFamily: FONT, fontWeight: 900, fontSize: 72, color: C.ink, background: C.green, padding: '10px 34px', borderRadius: 999, display: 'inline-block', transform: `scale(${sp(f, 6)})`}}>{p.label}</span></div> : null}
+		</AbsoluteFill>
+	);
+};
+
+// ---------------------------------------------------------------- map-flyto (any map image: fly to a point, drop a pin)
+const MapFlyTo: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	const o = inOut(f, d, 8, 10);
+	const fly = interpolate(f, [8, d * 0.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic)});
+	const zoom = 1 + (p.zoom ?? 3) * fly;
+	// x, y are fractions of the MAP IMAGE; convert to the frame (image is drawn 'contain')
+	const ar = p.aspect ?? 1;
+	const dw = Math.min(width, height * ar), dh = dw / ar;
+	const fx = ((width - dw) / 2 + (p.x ?? 0.5) * dw) / width, fy = ((height - dh) / 2 + (p.y ?? 0.5) * dh) / height;
+	const tx = (0.5 - fx) * 100 * (zoom - 1) / zoom, ty = (0.5 - fy) * 100 * (zoom - 1) / zoom;
+	const pin = sp(f, d * 0.6, 9, 0.6);
+	return (
+		<AbsoluteFill style={{opacity: o, background: p.bg ?? '#F1F4F7', overflow: 'hidden'}}>
+			<AbsoluteFill style={{transform: `scale(${zoom}) translate(${tx}%, ${ty}%)`}}>
+				{p.image ? <Img src={staticFile(p.image)} style={{width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply'}} /> : null}
+			</AbsoluteFill>
+			<div style={{position: 'absolute', left: width / 2, top: height / 2, transform: `translate(-50%,-100%) scale(${pin})`, transformOrigin: 'bottom center', textAlign: 'center'}}>
+				{p.label ? <div style={{fontFamily: FONT, fontWeight: 900, fontSize: width * 0.05, color: C.ink, background: C.yellow, padding: '6px 22px', borderRadius: 999, marginBottom: 10, whiteSpace: 'nowrap'}}>{p.label}</div> : null}
+				<div style={{fontSize: width * 0.12, lineHeight: 1, filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.5))'}}>📍</div>
+			</div>
+			<div style={{position: 'absolute', left: width / 2, top: height / 2, width: 40 + 260 * pin, height: (40 + 260 * pin) * 0.35, transform: 'translate(-50%,-50%)', borderRadius: '50%', border: `4px solid ${C.green}`, opacity: Math.min(1, pin) * (1 - (f % 30) / 30)}} />
+		</AbsoluteFill>
+	);
+};
+
 // ---------------------------------------------------------------- registry
 export const FX: Record<string, {comp: React.FC<FxArgs>; layers: ('behind' | 'front')[]}> = {
 	'title-behind': {comp: TitleBehind, layers: ['behind']},
@@ -342,6 +443,9 @@ export const FX: Record<string, {comp: React.FC<FxArgs>; layers: ('behind' | 'fr
 	'freeze-callout': {comp: FreezeCallout, layers: ['front']},
 	chart: {comp: Chart, layers: ['front']},
 	transition: {comp: Transition, layers: ['front']},
+	'edit-timeline': {comp: EditTimeline, layers: ['front']},
+	'photo-3d': {comp: Photo3D, layers: ['front']},
+	'map-flyto': {comp: MapFlyTo, layers: ['front']},
 };
 
 const CueView: React.FC<{cue: Cue; layer: 'behind' | 'front'; faces: Face[]; src?: string}> = ({cue, layer, faces, src}) => {
