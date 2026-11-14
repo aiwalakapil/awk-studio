@@ -12,7 +12,7 @@ Cuts dead air and retakes from a raw recording. Hindi, Hinglish and English.
 python3 ~/.claude/skills/awk-auto-cut/scripts/autocut.py RAW.mp4 --dry-run          # see what will be removed
 python3 ~/.claude/skills/awk-auto-cut/scripts/autocut.py RAW.mp4 -o RAW_cut.mp4      # render
 ```
-Options: `--lang hi|en` · `--gap 0.3` (pauses longer than this are cut; 0.5 for a calmer lecture) · `--pad 0.08` (breath kept around speech) · `--noise -32` (use -28 in a noisy room) · `--no-retakes` · `--height 1080` (downscale 4K; short side = 1080, so a vertical clip becomes 1080×1920) · `--crf 18`.
+Options: `--lang hi|en` · `--gap 0.3` (pauses longer than this are cut; 0.5 for a calmer lecture) · `--pad 0.08` (breath kept around speech) · `--noise` (default auto: speech level − 18 dB, so quiet and loud recordings both work; set e.g. -28 for a noisy room) · `--no-retakes` · `--height 1080` (downscale 4K; short side = 1080, so a vertical clip becomes 1080×1920) · `--crf 18`.
 
 ## What it does
 1. whisper.cpp word timings (cached as `RAW.mp4.hi.words.json`).

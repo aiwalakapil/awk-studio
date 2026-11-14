@@ -181,3 +181,15 @@ def silences(src, noise_db=-32, min_len=0.3):
     if len(en) < len(st):
         en.append(duration(src))
     return list(zip(st, en))
+
+
+def speech_threshold(src):
+    """Silence threshold that adapts to the recording: loud speech level (80th percentile) minus 18 dB."""
+    import array, math
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", str(src), "-vn", "-ac", "1", "-ar", "8000", "-f", "s16le", "-"],
+                         capture_output=True).stdout
+    a = array.array("h", pcm); n = 400
+    if len(a) < n * 10:
+        return -32.0
+    db = sorted(20 * math.log10(max(1, math.sqrt(sum(x * x for x in a[i:i + n]) / n)) / 32768) for i in range(0, len(a) - n, n))
+    return round(max(-50.0, min(-28.0, db[int(len(db) * 0.8)] - 18)), 1)

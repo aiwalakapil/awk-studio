@@ -1,6 +1,6 @@
 ---
 name: awk-effects
-description: Add scroll-stopping effects to a talking video in one render - text behind the head, glass widgets, spotlight with glitter, ticking checklist, words or photos orbiting the head, clones of the person, ₹ money counter, iPhone notification/toggle, breaking-news cut, freeze-frame name callout, animated bar chart, editing-timeline overlay, 2.5D photo parallax, map fly-to with pin, and transitions (zoom punch, zoom-through, whip, shake, glitch, flash, light leak). Use for "effects lagao", "text behind head", "glass widgets", "spotlight", "checklist animation", "news style", "freeze frame intro", "transition", "/effects".
+description: Add scroll-stopping effects to a talking video in one render - stock B-roll cards, speaker tags, text behind the head, glass widgets, spotlight with glitter, ticking checklist, words or photos orbiting the head, clones of the person, ₹ money counter, iPhone notification/toggle, breaking-news cut, freeze-frame name callout, animated bar chart, editing-timeline overlay, 2.5D photo parallax, map fly-to with pin, and transitions (zoom punch, zoom-through, whip, shake, glitch, flash, light leak). Use for "effects lagao", "text behind head", "glass widgets", "spotlight", "checklist animation", "news style", "freeze frame intro", "transition", "/effects".
 ---
 
 # Effects (AI Wala Kapil Studio)
@@ -29,6 +29,8 @@ python3 ~/.claude/skills/awk-effects/scripts/effects.py VIDEO.mp4 --spec fx.json
  {"fx": "glass-widgets", "t": 13.0, "dur": 3.0, "props": {"items": [{"icon": "🔥", "title": "Views", "value": "4.2L"}]}},
  {"fx": "money-counter", "t": 16.2, "dur": 2.4, "props": {"to": 50000, "label": "Course ki value"}},
  {"fx": "chart",         "t": 18.8, "dur": 2.6, "props": {"title": "Registrations", "bars": [{"label": "Day 1", "value": 58}, {"label": "Day 2", "value": 111}]}},
+ {"fx": "broll",         "t": 19.0, "dur": 2.5, "props": {"video": "~/Envato/lockers.mov", "mode": "card", "label": "Locker rent: ₹3,000/saal"}},
+ {"fx": "tag",           "t": 0.0, "dur": 4.0, "props": {"text": "👤 CUSTOMER"}},
  {"fx": "news-cut",      "t": 21.5, "dur": 2.0, "props": {"headline": "FREE AI class shuru!"}},
  {"fx": "freeze-callout","t": 24.0, "dur": 1.6, "props": {"name": "KAPIL", "sub": "AI Wala Kapil"}}
 ]
@@ -41,7 +43,9 @@ python3 ~/.claude/skills/awk-effects/scripts/effects.py VIDEO.mp4 --spec fx.json
 - `clone` is composited by ffmpeg with the matte: copies of the person, shifted in time, sit beside them (not shown in `--preview`).
 - `photo-3d` cuts the subject out of any photo (Apple Vision) and moves it against the background for depth.
 - `map-flyto` takes any map image (x/y are fractions of the image); use a high-resolution map, small images look soft when zoomed.
-- Local image paths in props (`images`, `image`, `photo`) are copied into the studio automatically.
+- `broll` drops a stock clip (Envato/Pexels) in as a **card** above the speaker (speaker stays visible) or **full** screen; `tag` is a small pill for "who is speaking" in skits.
+- Zooms/transitions that redraw the video are skipped automatically while a behind-the-person effect is on screen (they would hide it); the script prints what it skipped.
+- Local paths in props (`images`, `image`, `photo`, `video`) are copied into the studio automatically.
 
 ## Workflow for Claude
 1. Transcribe or read the script, pick 4–8 moments (hook in the first 2 s, numbers, lists, CTA). Don't stack effects back to back; 1–3 s each, a breather between.

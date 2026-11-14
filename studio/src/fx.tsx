@@ -32,7 +32,7 @@ const TitleBehind: React.FC<FxArgs> = ({p, f, d, face}) => {
 			{words.map((w, i) => {
 				const s = sp(f, i * 5, 12, 0.8);
 				return (
-					<div key={i} style={{fontFamily: FONT, fontWeight: 900, fontSize: size, lineHeight: 0.92, letterSpacing: -size * 0.03, color: i === words.length - 1 ? (p.color ?? C.green) : C.white, transform: `translateY(${(1 - s) * size * 0.8}px) scale(${0.9 + s * 0.1 + f * 0.0006})`, textShadow: `0 ${size * 0.04}px ${size * 0.12}px rgba(0,0,0,0.35)`, whiteSpace: 'nowrap'}}>
+					<div key={i} style={{fontFamily: FONT, fontWeight: 900, fontSize: size, lineHeight: 0.92, letterSpacing: -size * 0.03, color: i === words.length - 1 ? (p.color ?? C.green) : C.white, transform: `translateY(${(1 - s) * size * 0.8}px) scale(${0.9 + s * 0.1 + f * 0.0006})`, WebkitTextStroke: `${Math.max(2, size * 0.018)}px rgba(6,17,13,0.55)`, paintOrder: 'stroke', textShadow: `0 ${size * 0.04}px ${size * 0.12}px rgba(0,0,0,0.45)`, whiteSpace: 'nowrap'}}>
 						{w}
 					</div>
 				);
@@ -299,7 +299,7 @@ const Chart: React.FC<FxArgs> = ({p, f, d}) => {
 						const h = (b.value / max) * (H - 90 * unit) * g;
 						return (
 							<div key={i} style={{flex: 1, maxWidth: 200 * unit, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%'}}>
-								<div style={{fontFamily: FONT, fontWeight: 900, fontSize: 38 * unit, color: C.white, opacity: g}}>{p.prefix ?? ''}{Math.round(b.value * g * 10) / 10}{p.suffix ?? ''}</div>
+								<div style={{fontFamily: FONT, fontWeight: 900, fontSize: 38 * unit, color: C.white, opacity: g}}>{p.prefix ?? ''}{(Number.isInteger(b.value) ? Math.round(b.value * Math.min(1, g)) : Math.round(b.value * Math.min(1, g) * 10) / 10).toLocaleString('en-IN')}{p.suffix ?? ''}</div>
 								<div style={{width: '100%', maxWidth: 170 * unit, height: h, borderRadius: `${16 * unit}px ${16 * unit}px 0 0`, background: i === bars.length - 1 ? C.green : 'rgba(255,255,255,0.35)', boxShadow: i === bars.length - 1 ? `0 0 30px ${C.green}88` : 'none'}} />
 								<div style={{fontFamily: FONT, fontWeight: 700, fontSize: 30 * unit, color: C.mute, marginTop: 10 * unit}}>{b.label}</div>
 							</div>
@@ -487,6 +487,41 @@ const Ticker: React.FC<FxArgs> = ({p, f, d}) => {
 	);
 };
 
+// ---------------------------------------------------------------- broll (stock clip: full screen or a card above the speaker)
+const BRoll: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	const unit = width / 1080;
+	const o = inOut(f, d, 6, 6);
+	const k = f / Math.max(1, d);
+	const vid = p.video ? <OffthreadVideo src={staticFile(p.video)} startFrom={Math.round((p.from ?? 0) * FPS)} muted style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.06 + 0.06 * k})`}} /> : null;
+	const label = p.label ? <div style={{position: 'absolute', left: 0, right: 0, bottom: 24 * unit, textAlign: 'center'}}><span style={{fontFamily: FONT, fontWeight: 900, fontSize: 44 * unit, color: C.ink, background: C.yellow, padding: `${6 * unit}px ${24 * unit}px`, borderRadius: 999}}>{p.label}</span></div> : null;
+	if ((p.mode ?? 'card') === 'full') {
+		return <AbsoluteFill style={{opacity: o, overflow: 'hidden'}}>{vid}{label}</AbsoluteFill>;
+	}
+	const w = width * 0.9, h = w * 9 / 16;
+	const s = sp(f, 0, 12, 0.7);
+	return (
+		<AbsoluteFill style={{opacity: o}}>
+			<div style={{position: 'absolute', left: (width - w) / 2, top: height * (p.y ?? 0.07), width: w, height: h, borderRadius: 36 * unit, overflow: 'hidden', border: `${5 * unit}px solid ${C.white}`, boxShadow: '0 24px 60px rgba(0,0,0,0.45)', transform: `scale(${0.85 + 0.15 * s}) rotate(${(1 - s) * -4}deg)`}}>
+				{vid}{label}
+			</div>
+		</AbsoluteFill>
+	);
+};
+
+// ---------------------------------------------------------------- tag (who is speaking / small label)
+const Tag: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	const unit = width / 1080;
+	const s = sp(f, 0, 12, 0.6);
+	const o = 1 - ramp(f, d - 6, d);
+	return (
+		<AbsoluteFill style={{opacity: o}}>
+			<div style={{position: 'absolute', left: width * (p.x ?? 0.05), top: height * (p.y ?? 0.05), transform: `translateX(${(1 - s) * -300 * unit}px)`, fontFamily: FONT, fontWeight: 900, fontSize: 40 * unit, color: p.dark ? C.white : C.ink, background: p.color ?? C.green, padding: `${10 * unit}px ${26 * unit}px`, borderRadius: 999, boxShadow: '0 10px 30px rgba(0,0,0,0.35)'}}>{p.text ?? ''}</div>
+		</AbsoluteFill>
+	);
+};
+
 // ---------------------------------------------------------------- registry
 export const FX: Record<string, {comp: React.FC<FxArgs>; layers: ('behind' | 'front')[]}> = {
 	'title-behind': {comp: TitleBehind, layers: ['behind']},
@@ -505,6 +540,8 @@ export const FX: Record<string, {comp: React.FC<FxArgs>; layers: ('behind' | 'fr
 	'map-flyto': {comp: MapFlyTo, layers: ['front']},
 	clone: {comp: CloneLabel, layers: ['front']},
 	ticker: {comp: Ticker, layers: ['front']},
+	broll: {comp: BRoll, layers: ['front']},
+	tag: {comp: Tag, layers: ['front']},
 };
 
 const CueView: React.FC<{cue: Cue; layer: 'behind' | 'front'; faces: Face[]; src?: string}> = ({cue, layer, faces, src}) => {

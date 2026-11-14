@@ -33,6 +33,8 @@ FX_DOC = {
     "edit-timeline":  ("front",  "Editing-app timeline with tracks and a moving playhead.  title, tracks, seconds, y"),
     "clone":          ("clone",  "Split into side-by-side panels of the same person, each a moment apart (no overlap).  count: 2 (extra copies), lag: 0.4, crop: 0.62 (width share), bottom: 0.6 (cut above burned-in text), y: 0.2, label, labelY"),
     "photo-3d":       ("front",  "Full-screen 2.5D parallax of a photo (subject cut out automatically).  photo: path, label, direction: 1|-1"),
+    "tag":            ("front",  "Small pill label, e.g. who is speaking in a skit.  text, color, dark: true (white text), x, y"),
+    "broll":          ("front",  "Stock clip (Envato/Pexels): video: path, from: sec, mode: card|full, label, y.  card keeps the speaker visible below"),
     "ticker":         ("front",  "Stock-market ticker strip (finance).  items: [{s: 'NIFTY', v: '+0.8%'}], tag: 'LIVE', y: 0.86, speed"),
     "map-flyto":      ("front",  "Fly into a point of any map image and drop a pin (x, y 0-1, zoom, label), OR pins: [{x,y,label}] popping one by one + title.  image: 'world' = built-in world map with pins/target as {lat, lon}"),
 }
@@ -98,6 +100,16 @@ def main():
         c["dur"] = float(c.get("dur", 2.5))
         c.setdefault("props", {})
     cues.sort(key=lambda c: c["t"])
+    # transitions/zooms redraw the whole video on the front layer, which would hide anything placed behind the person
+    redraw = {"zoom-punch", "zoom-through", "whip", "shake", "glitch", "zoom-hold"}
+    behind_spans = [(c["t"], c["t"] + c["dur"]) for c in cues if FX_DOC[c["fx"]][0] in ("behind", "both")]
+    keep = []
+    for c in cues:
+        if c["fx"] == "transition" and c["props"].get("kind", "zoom-punch") in redraw and any(a0 < c["t"] + c["dur"] and c["t"] < a1 for a0, a1 in behind_spans):
+            print(f"  ! skipped {c['props'].get('kind')} at {c['t']:.1f}s: it would hide the behind-the-person effect there")
+            continue
+        keep.append(c)
+    cues = keep
 
     behind = any(FX_DOC[c["fx"]][0] in ("behind", "both") for c in cues)
     clones = [c for c in cues if c["fx"] == "clone"]
@@ -109,6 +121,8 @@ def main():
     staged = awk.stage(src) if any(c["fx"] in NEEDS_SRC for c in cues) else ""
     for c in cues:   # local images used by effects -> Remotion public/_in
         pr = c["props"]
+        if pr.get("video") and Path(str(pr["video"])).expanduser().exists():
+            pr["video"] = awk.stage(Path(pr["video"]).expanduser().resolve())
         if isinstance(pr.get("images"), list):
             pr["images"] = [awk.stage(Path(x).expanduser().resolve()) for x in pr["images"]]
         if c["fx"] == "map-flyto" and pr.get("image") == "world":

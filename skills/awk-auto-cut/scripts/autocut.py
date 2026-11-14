@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--lang", default="hi")
     ap.add_argument("--gap", type=float, default=0.3, help="pauses longer than this (s) are cut")
     ap.add_argument("--pad", type=float, default=0.08, help="breathing room kept around speech (s)")
-    ap.add_argument("--noise", type=float, default=-32, help="silence threshold in dB (raise to -30 for noisy rooms)")
+    ap.add_argument("--noise", type=float, default=None, help="silence threshold in dB (default: auto = speech level - 18 dB)")
     ap.add_argument("--no-retakes", action="store_true"); ap.add_argument("--no-fillers", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--crf", default="18")
@@ -48,7 +48,9 @@ def main():
     words = awk.transcribe(src, a.lang)
     removed = []
     # speech regions = gaps between silences
-    sil = awk.silences(src, a.noise, a.gap)
+    noise = a.noise if a.noise is not None else awk.speech_threshold(src)
+    print(f"silence threshold {noise} dB")
+    sil = awk.silences(src, noise, a.gap)
     regions, t0 = [], 0.0
     for s0, s1 in sil:
         if s0 - t0 > 0.05:

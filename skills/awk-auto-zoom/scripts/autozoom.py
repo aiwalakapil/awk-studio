@@ -27,7 +27,7 @@ def main():
     if a.edl:
         cuts = json.loads(Path(a.edl).read_text())["cuts"]
     else:
-        cuts = [(s0 + s1) / 2 for s0, s1 in awk.silences(src, -32, 0.18)]   # mid-pause = natural cut point
+        cuts = [(s0 + s1) / 2 for s0, s1 in awk.silences(src, awk.speech_threshold(src), 0.18)]   # mid-pause = natural cut point
         if len(cuts) < dur / 4:   # music under the voice hides pauses: use word starts after small gaps too
             cuts += [w["s"] for p, w in zip(words, words[1:]) if w["s"] - p["e"] > 0.08]
     # keep segments 1.2-4 s: drop crowded points, split long stretches at the nearest word start
