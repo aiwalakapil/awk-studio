@@ -558,6 +558,8 @@ export const FxLayer: React.FC<FxLayerProps> = ({layer, cues, faces, src}) => (
 	<AbsoluteFill>
 		{cues
 			.filter((c) => FX[c.fx] && FX[c.fx].layers.includes(layer))
+			// transitions redraw the video, so they always sit UNDER the other effects
+			.sort((x, y) => (x.fx === 'transition' ? 0 : 1) - (y.fx === 'transition' ? 0 : 1) || x.t - y.t)
 			.map((c, i) => (
 				<Sequence key={i} from={Math.round(c.t * FPS)} durationInFrames={Math.max(1, Math.round(c.dur * FPS))}>
 					<CueView cue={c} layer={layer} faces={faces} src={src} />

@@ -24,8 +24,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("video", nargs="?"); ap.add_argument("-o", "--out")
     ap.add_argument("--edl"); ap.add_argument("--captions"); ap.add_argument("--events")
-    ap.add_argument("--every", type=int, default=3)
-    ap.add_argument("--level", type=float, default=-16, help="base SFX level (dB)")
+    ap.add_argument("--every", type=int, default=0, help="pop on every Nth caption chunk (0 = no caption pops; they get repetitive fast)")
+    ap.add_argument("--level", type=float, default=-20, help="base SFX level (dB); keep SFX well under the voice")
     ap.add_argument("--list", action="store_true", help="list available sounds")
     a = ap.parse_args()
 
@@ -44,7 +44,7 @@ def main():
         ch = json.loads(Path(a.captions).read_text())["chunks"]
         for i, c in enumerate(ch):
             after_pause = i > 0 and c["s"] - ch[i - 1]["e"] > 0.6
-            if i % a.every == 0 or after_pause:
+            if (a.every and i % a.every == 0) or (a.every and after_pause):
                 cues.append({"t": c["s"], "sfx": "pop"})
     if a.events:
         cues += json.loads(Path(a.events).read_text())

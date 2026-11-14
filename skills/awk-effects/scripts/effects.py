@@ -102,11 +102,11 @@ def main():
     cues.sort(key=lambda c: c["t"])
     # transitions/zooms redraw the whole video on the front layer, which would hide anything placed behind the person
     redraw = {"zoom-punch", "zoom-through", "whip", "shake", "glitch", "zoom-hold"}
-    behind_spans = [(c["t"], c["t"] + c["dur"]) for c in cues if FX_DOC[c["fx"]][0] in ("behind", "both")]
+    behind_spans = [(c["t"], c["t"] + c["dur"]) for c in cues if FX_DOC[c["fx"]][0] in ("behind", "both") or c["fx"] == "clone"]
     keep = []
     for c in cues:
         if c["fx"] == "transition" and c["props"].get("kind", "zoom-punch") in redraw and any(a0 < c["t"] + c["dur"] and c["t"] < a1 for a0, a1 in behind_spans):
-            print(f"  ! skipped {c['props'].get('kind')} at {c['t']:.1f}s: it would hide the behind-the-person effect there")
+            print(f"  ! skipped {c['props'].get('kind')} at {c['t']:.1f}s: it would hide the behind-the-person/clone effect there")
             continue
         keep.append(c)
     cues = keep

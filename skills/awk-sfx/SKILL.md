@@ -14,13 +14,13 @@ python3 ~/.claude/skills/awk-sfx/scripts/sfx.py VIDEO.mp4 -o VIDEO_sfx.mp4 \
    --edl RAW_cut.mp4.edl.json --captions VIDEO_cap.mp4.captions.json --events events.json
 ```
 - `--edl` (from awk-auto-cut): whoosh on every cut.
-- `--captions` (from awk-captions): pop on every 3rd chunk (`--every N`) and after long pauses.
+- `--captions` + `--every N` (from awk-captions): pop on every Nth chunk. **Off by default**: repeated pops sound like "tak-tak" and tire the viewer.
 - `--events`: your own cues `[{"t": 0.0, "sfx": "riser", "gain": -14}, {"t": 2.1, "sfx": "hit"}]`.
 - `--level -16` base level; cues closer than 0.25 s are thinned. The final cue list is saved as `OUT.sfx.json`.
 
 ## Taste rules (from the reels)
 - Hook: riser into the first big text, a hit when it lands.
 - Whoosh on cuts and transitions, pop on text boxes, ding/success on a "win moment" or ✅.
-- Fewer is better: if every caption pops, nothing pops. Voice must stay clearly on top.
+- Fewer is better: about **one SFX per 2.5 s at most**, each 15–20 dB under the voice. If every caption pops, nothing pops (and viewers complain).
 - Envato SFX can be used too: copy the .wav into `awk-studio/sfx/` locally (never commit Envato files).
 Run **awk-audio-master** after this.

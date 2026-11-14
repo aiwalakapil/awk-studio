@@ -39,6 +39,7 @@ def main():
     ap.add_argument("--no-retakes", action="store_true"); ap.add_argument("--no-fillers", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--crf", default="18")
+    ap.add_argument("--join-gap", type=float, default=0.1, help="max quiet left at each join (s)")
     ap.add_argument("--height", type=int, help="downscale so the SHORT side is this (1080 -> 1080x1920 reel / 1920x1080)")
     a = ap.parse_args()
 
@@ -89,6 +90,28 @@ def main():
     segs = [[round(x, 3), round(y, 3)] for x, y in segs if y - x > 0.2]
     if not segs:
         raise SystemExit("nothing left after cutting")
+    # tighten every join: trim low-level tails/heads so a join never holds more than --join-gap of quiet
+    import array, math, subprocess as sp_
+    pcm = sp_.run(["ffmpeg", "-v", "error", "-i", str(src), "-vn", "-ac", "1", "-ar", "8000", "-f", "s16le", "-"], capture_output=True).stdout
+    A = array.array("h", pcm); N = 200   # 25 ms windows
+    db = [20 * math.log10(max(1, math.sqrt(sum(x * x for x in A[i:i + N]) / N)) / 32768) for i in range(0, len(A) - N, N)]
+    th = sorted(db)[int(len(db) * 0.8)] - 14
+    loud = lambda t: db[min(len(db) - 1, max(0, int(t / 0.025)))] >= th
+    trimmed = 0.0
+    for k in range(len(segs)):
+        s0, e0 = segs[k]
+        e1 = e0
+        while e1 - s0 > 0.3 and not loud(e1 - 0.0125):
+            e1 -= 0.025
+        s1 = s0
+        while e1 - s1 > 0.3 and not loud(s1 + 0.0125):
+            s1 += 0.025
+        half = a.join_gap / 2
+        e1 = min(e0, e1 + half); s1 = max(s0, s1 - half)
+        trimmed += (e0 - e1) + (s1 - s0)
+        segs[k] = [round(s1 if k else s0, 3), round(e1 if k < len(segs) - 1 else e0, 3)]
+    if trimmed > 0.02:
+        print(f"tightened joins: -{trimmed:.2f}s of quiet")
 
     cuts, t = [], 0.0
     for s, e in segs[:-1]:
