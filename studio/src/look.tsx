@@ -89,8 +89,8 @@ export const IntroSting: React.FC = () => {
 };
 
 // ---------- 2. Title card (5 s) ----------
-export type TitleProps = {lecture: number; title: string; result: string; part?: string};
-export const TitleCard: React.FC<TitleProps> = ({lecture, title, result, part = ''}) => {
+export type TitleProps = {lecture: number; title: string; result: string; part?: string; label?: string; resultLabel?: string};
+export const TitleCard: React.FC<TitleProps> = ({lecture, title, result, part = '', label, resultLabel = 'Aaj ka result:'}) => {
 	const f = useCurrentFrame();
 	const num = sp(f, 0, 10);
 	const bar = ramp(f, 20, 45);
@@ -99,13 +99,13 @@ export const TitleCard: React.FC<TitleProps> = ({lecture, title, result, part = 
 			<BrandBg />
 			<AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', padding: 120}}>
 				<div style={{transform: `scale(${num})`, opacity: num}}>
-					<Chip size={40}>LECTURE {String(lecture).padStart(2, '0')}{part ? ` · ${part}` : ''}</Chip>
+					<Chip size={40}>{label ?? `LECTURE ${String(lecture).padStart(2, '0')}`}{part ? ` · ${part}` : ''}</Chip>
 				</div>
 				<div style={{height: 40}} />
 				<Rise text={title} delay={10} size={118} />
 				<div style={{width: 900 * bar, height: 8, borderRadius: 4, background: `linear-gradient(90deg, ${C.green}, ${C.yellow})`, margin: '36px 0'}} />
 				<div style={{opacity: ramp(f, 40, 55), transform: `translateY(${(1 - ramp(f, 40, 55)) * 30}px)`, fontFamily: FONT, fontSize: 48, fontWeight: 700, color: C.mute}}>
-					Aaj ka result: <span style={{color: C.yellow}}>{result}</span>
+					{resultLabel ? `${resultLabel} ` : ''}<span style={{color: C.yellow}}>{result}</span>
 				</div>
 			</AbsoluteFill>
 		</AbsoluteFill>

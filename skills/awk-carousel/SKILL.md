@@ -11,6 +11,8 @@ python3 ~/.claude/skills/awk-carousel/scripts/carousel.py day9.json --video    #
 python3 ~/.claude/skills/awk-carousel/scripts/carousel.py day9.json --only 3   # re-render one slide
 ```
 
+`"plain": true` hides the 1/7 counter and Swipe/Save (single post or story card).
+
 Slide types: `hook` (chip, title, sub, image) · `point` (n, icon, title, body, image) · `list` (title, items) · `compare` (title, left/right {head, items}) · `quote` (text, by) · `cta` (title, sub, actions). Full example in the script header.
 
 ## The 7-slide formula (Day 9)

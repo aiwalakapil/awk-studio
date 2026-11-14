@@ -11,10 +11,10 @@ export type Slide =
 	| {type: 'quote'; text: string; by?: string}
 	| {type: 'compare'; title?: string; left: {head: string; items: string[]}; right: {head: string; items: string[]}}
 	| {type: 'cta'; title: string; sub?: string; actions?: string[]};
-export type CarouselProps = {slides: Slide[]; handle?: string; series?: string; slideSeconds?: number};
+export type CarouselProps = {slides: Slide[]; handle?: string; series?: string; slideSeconds?: number; plain?: boolean};
 export const SLIDE_F = 90; // 3 s per slide in the video version
 
-const Frame: React.FC<{i: number; n: number; handle: string; series?: string; children: React.ReactNode}> = ({i, n, handle, series, children}) => {
+const Frame: React.FC<{i: number; n: number; handle: string; series?: string; plain?: boolean; children: React.ReactNode}> = ({i, n, handle, series, plain, children}) => {
 	const {width} = useVideoConfig();
 	const u = width / 1080;
 	return (
@@ -24,12 +24,12 @@ const Frame: React.FC<{i: number; n: number; handle: string; series?: string; ch
 			<AbsoluteFill style={{padding: 80 * u, display: 'flex', flexDirection: 'column'}}>
 				<div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FONT, fontWeight: 800, fontSize: 30 * u, color: C.mute}}>
 					<span>{series ?? ''}</span>
-					<span style={{color: C.green}}>{i + 1}/{n}</span>
+					{plain ? null : <span style={{color: C.green}}>{i + 1}/{n}</span>}
 				</div>
 				<div style={{flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>{children}</div>
 				<div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FONT, fontWeight: 800, fontSize: 30 * u, color: C.mute}}>
 					<span>{handle}</span>
-					{i < n - 1 ? <span style={{color: C.white}}>Swipe →</span> : <span style={{color: C.yellow}}>Save 🔖</span>}
+					{plain ? null : i < n - 1 ? <span style={{color: C.white}}>Swipe →</span> : <span style={{color: C.yellow}}>Save 🔖</span>}
 				</div>
 			</AbsoluteFill>
 		</AbsoluteFill>
@@ -111,7 +111,7 @@ const SlideView: React.FC<{s: Slide; f: number}> = ({s, f}) => {
 	}
 };
 
-export const Carousel: React.FC<CarouselProps> = ({slides, handle, series}) => {
+export const Carousel: React.FC<CarouselProps> = ({slides, handle, series, plain}) => {
 	const f = useCurrentFrame();
 	const {width} = useVideoConfig();
 	const h = handle ?? BRAND.role.split('·').pop()?.trim() ?? '';
@@ -126,7 +126,7 @@ export const Carousel: React.FC<CarouselProps> = ({slides, handle, series}) => {
 				return (
 					<Sequence key={i} from={i * SLIDE_F - (i === 0 ? 0 : 12)} durationInFrames={SLIDE_F + 12 + (i === slides.length - 1 ? 60 : 0)}>
 						<AbsoluteFill style={{transform: `translateX(${interpolate(x, [-width, width], [-width, width])}px)`}}>
-							<Frame i={i} n={slides.length} handle={h} series={series}>
+							<Frame i={i} n={slides.length} handle={h} series={series} plain={plain}>
 								<SlideView s={s} f={Math.max(0, local - 6)} />
 							</Frame>
 						</AbsoluteFill>

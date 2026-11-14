@@ -46,6 +46,8 @@ def main():
     want = lambda k: only is None or k in only
 
     title = {"lecture": n, "title": L["title"], "result": L.get("result", ""), "part": L.get("part", "")}
+    if L.get("label"):
+        title["label"] = L["label"]   # e.g. "CLASS 0" for the bootcamp
     end = {"next": L.get("next", "")}
 
     # stills for OBS
