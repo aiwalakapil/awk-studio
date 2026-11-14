@@ -1,0 +1,11 @@
+node_modules/
+studio/out/
+studio/public/_in/
+# personal photos stay local (add your own to studio/public/brand/)
+studio/public/brand/
+*.words.json
+*.edl.json
+.DS_Store
+# licensed assets are never committed
+*.mp3
+envato/
