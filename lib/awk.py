@@ -193,3 +193,26 @@ def speech_threshold(src):
         return -32.0
     db = sorted(20 * math.log10(max(1, math.sqrt(sum(x * x for x in a[i:i + n]) / n)) / 32768) for i in range(0, len(a) - n, n))
     return round(max(-50.0, min(-28.0, db[int(len(db) * 0.8)] - 18)), 1)
+
+
+def transcribe_windows(media, lang="hi", win=12.0, overlap=1.0):
+    """Whisper on long or tricky audio can stop early; transcribe in short windows and stitch.
+    Cached as <media>.<lang>.win.words.json."""
+    media = Path(media)
+    cache_file = media.with_suffix(media.suffix + f".{lang}.win.words.json")
+    if cache_file.exists() and cache_file.stat().st_mtime >= media.stat().st_mtime:
+        return json.loads(cache_file.read_text())
+    total = duration(media); words = []; t = 0.0
+    tmpdir = cache_file.parent / ".awk_win"; tmpdir.mkdir(exist_ok=True)
+    k = 0
+    while t < total - 0.2:
+        seg = tmpdir / f"{media.stem}_{k:03d}.wav"
+        run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{t:.3f}", "-t", f"{win + overlap:.3f}", "-i", media, "-ar", "16000", "-ac", "1", seg])
+        for w in transcribe(seg, lang, cache=False):
+            s0 = w["s"] + t
+            if s0 >= t + (overlap / 2 if k else 0) and (not words or s0 > words[-1]["s"] + 0.05) and s0 < t + win + overlap / 2:
+                words.append({"w": w["w"], "s": round(s0, 3), "e": round(w["e"] + t, 3)})
+        seg.unlink(missing_ok=True)
+        t += win; k += 1
+    cache_file.write_text(json.dumps(words, ensure_ascii=False))
+    return words
