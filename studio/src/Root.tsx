@@ -5,6 +5,7 @@ import {IntroSting, TitleCard, ChapterCard, StepBadge, WinBurst, PhoneToLaptop, 
 import {Captions, CaptionProps, StepClip, StepClipProps, INTRO} from './clips';
 import {FxLayer, FxLayerProps} from './fx';
 import {Reframe, ReframeProps} from './reframe';
+import {Carousel, CarouselProps, SLIDE_F} from './carousel';
 
 const W = 1920, H = 1080;
 
@@ -43,5 +44,8 @@ export const Root: React.FC = () => (
 		<Composition id="Reframe" component={Reframe} fps={FPS} width={1080} height={1920} durationInFrames={300}
 			defaultProps={{src: '', srcW: 1920, srcH: 1080, faces: [], duration: 10, width: 1080, height: 1920} as ReframeProps}
 			calculateMetadata={({props}) => ({durationInFrames: Math.max(1, Math.ceil(props.duration * FPS)), width: props.width, height: props.height})} />
+		<Composition id="Carousel" component={Carousel} fps={FPS} width={1080} height={1350} durationInFrames={300}
+			defaultProps={{slides: [{type: 'hook', title: 'Ek prompt, 7 slides', chip: 'DAY 9'}, {type: 'cta', title: 'Save karo'}], series: 'AI WALA KAPIL'} as CarouselProps}
+			calculateMetadata={({props}) => ({durationInFrames: props.slides.length * SLIDE_F + 60})} />
 	</>
 );

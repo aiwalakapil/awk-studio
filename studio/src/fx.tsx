@@ -408,24 +408,81 @@ const Photo3D: React.FC<FxArgs> = ({p, f, d}) => {
 const MapFlyTo: React.FC<FxArgs> = ({p, f, d}) => {
 	const {width, height} = useVideoConfig();
 	const o = inOut(f, d, 8, 10);
+	const pins: {x: number; y: number; label?: string}[] = p.pins ?? [];
 	const fly = interpolate(f, [8, d * 0.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic)});
-	const zoom = 1 + (p.zoom ?? 3) * fly;
+	const zoom = 1 + (p.zoom ?? (pins.length ? 0.08 : 3)) * (pins.length ? f / d : fly);
 	// x, y are fractions of the MAP IMAGE; convert to the frame (image is drawn 'contain')
 	const ar = p.aspect ?? 1;
-	const dw = Math.min(width, height * ar), dh = dw / ar;
-	const fx = ((width - dw) / 2 + (p.x ?? 0.5) * dw) / width, fy = ((height - dh) / 2 + (p.y ?? 0.5) * dh) / height;
+	// very wide maps (world) in a tall frame: make it big and pan across instead of a thin strip
+	const pan = pins.length > 0 && ar > (width / height) * 1.8;
+	const dh = pan ? height * 0.5 : Math.min(width, height * ar) / ar;
+	const dw = dh * ar;
+	const panX = pan ? interpolate(f, [4, d * 0.72], [0, -(dw - width)], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.sin)}) : (width - dw) / 2;
+	const fx = (panX + (p.x ?? 0.5) * dw) / width, fy = ((height - dh) / 2 + (p.y ?? 0.5) * dh) / height;
 	const tx = (0.5 - fx) * 100 * (zoom - 1) / zoom, ty = (0.5 - fy) * 100 * (zoom - 1) / zoom;
 	const pin = sp(f, d * 0.6, 9, 0.6);
 	return (
 		<AbsoluteFill style={{opacity: o, background: p.bg ?? '#F1F4F7', overflow: 'hidden'}}>
 			<AbsoluteFill style={{transform: `scale(${zoom}) translate(${tx}%, ${ty}%)`}}>
-				{p.image ? <Img src={staticFile(p.image)} style={{width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply'}} /> : null}
+				{p.image ? <Img src={staticFile(p.image)} style={{position: 'absolute', left: panX, top: (height - dh) / 2, width: dw, height: dh, mixBlendMode: 'multiply'}} /> : null}
+				{pins.map((q, i) => {
+					const px = panX + q.x * dw, py = (height - dh) / 2 + q.y * dh;
+					// in pan mode a pin drops when it scrolls into view
+					const appear = pan ? f - interpolate(q.x * dw - width * 0.75, [0, dw - width], [4, d * 0.72], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}) : f - 10 - i * (p.every ?? 5);
+					const pp = sp(appear, 0, 9, 0.6);
+					return (
+						<div key={i} style={{position: 'absolute', left: px, top: py, transform: `translate(-50%,-100%) scale(${pp})`, transformOrigin: 'bottom center', textAlign: 'center'}}>
+							{q.label ? <div style={{fontFamily: FONT, fontWeight: 900, fontSize: width * 0.03, color: C.white, background: C.ink, padding: '2px 12px', borderRadius: 999, marginBottom: 4, whiteSpace: 'nowrap'}}>{q.label}</div> : null}
+							<div style={{fontSize: width * 0.07, lineHeight: 1, filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.4))'}}>📍</div>
+						</div>
+					);
+				})}
 			</AbsoluteFill>
-			<div style={{position: 'absolute', left: width / 2, top: height / 2, transform: `translate(-50%,-100%) scale(${pin})`, transformOrigin: 'bottom center', textAlign: 'center'}}>
+			{p.title ? <div style={{position: 'absolute', left: 0, right: 0, top: height * 0.12, textAlign: 'center', transform: `translateY(${(1 - sp(f, 2)) * -60}px)`}}><span style={{fontFamily: FONT, fontWeight: 900, fontSize: width * 0.052, color: C.white, background: C.ink, padding: '10px 30px', borderRadius: 999, display: 'inline-block', whiteSpace: 'nowrap'}}>{p.title}</span></div> : null}
+			<div style={{display: pins.length ? 'none' : 'block', position: 'absolute', left: width / 2, top: height / 2, transform: `translate(-50%,-100%) scale(${pin})`, transformOrigin: 'bottom center', textAlign: 'center'}}>
 				{p.label ? <div style={{fontFamily: FONT, fontWeight: 900, fontSize: width * 0.05, color: C.ink, background: C.yellow, padding: '6px 22px', borderRadius: 999, marginBottom: 10, whiteSpace: 'nowrap'}}>{p.label}</div> : null}
 				<div style={{fontSize: width * 0.12, lineHeight: 1, filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.5))'}}>📍</div>
 			</div>
-			<div style={{position: 'absolute', left: width / 2, top: height / 2, width: 40 + 260 * pin, height: (40 + 260 * pin) * 0.35, transform: 'translate(-50%,-50%)', borderRadius: '50%', border: `4px solid ${C.green}`, opacity: Math.min(1, pin) * (1 - (f % 30) / 30)}} />
+			<div style={{display: pins.length ? 'none' : 'block', position: 'absolute', left: width / 2, top: height / 2, width: 40 + 260 * pin, height: (40 + 260 * pin) * 0.35, transform: 'translate(-50%,-50%)', borderRadius: '50%', border: `4px solid ${C.green}`, opacity: Math.min(1, pin) * (1 - (f % 30) / 30)}} />
+		</AbsoluteFill>
+	);
+};
+
+// ---------------------------------------------------------------- clone label (the panels themselves are composited by effects.py)
+const CloneLabel: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	if (!p.label) return null;
+	const o = inOut(f, d, 6, 8);
+	return (
+		<AbsoluteFill style={{alignItems: 'center', justifyContent: 'flex-start', paddingTop: height * (p.labelY ?? 0.72), opacity: o}}>
+			<div style={{transform: `scale(${sp(f, 4, 10)})`, fontFamily: FONT, fontWeight: 900, fontSize: width * 0.075, color: C.ink, background: C.green, padding: `${width * 0.012}px ${width * 0.045}px`, borderRadius: 999, boxShadow: `0 0 50px ${C.green}88`}}>{p.label}</div>
+		</AbsoluteFill>
+	);
+};
+
+// ---------------------------------------------------------------- ticker (stock-market strip)
+const Ticker: React.FC<FxArgs> = ({p, f, d}) => {
+	const {width, height} = useVideoConfig();
+	const unit = width / 1080;
+	const items: {s: string; v: string}[] = p.items ?? [{s: 'NIFTY 50', v: '+0.8%'}, {s: 'SENSEX', v: '+0.6%'}, {s: 'GOLD', v: '+1.2%'}, {s: 'FD', v: '7.0%'}, {s: 'SIP', v: '₹1,000/mo'}];
+	const o = inOut(f, d, 8, 8);
+	const row = [...items, ...items, ...items, ...items];
+	const x = -((f * (p.speed ?? 5)) % (width * 1.6));
+	return (
+		<AbsoluteFill style={{opacity: o}}>
+			<div style={{position: 'absolute', left: 0, right: 0, top: height * (p.y ?? 0.86), height: 76 * unit, background: 'rgba(6,12,10,0.92)', borderTop: `3px solid ${C.green}`, borderBottom: `3px solid ${C.green}`, overflow: 'hidden', display: 'flex', alignItems: 'center'}}>
+				<div style={{position: 'absolute', left: 0, top: 0, bottom: 0, padding: `0 ${22 * unit}px`, background: C.green, color: C.ink, fontFamily: FONT, fontWeight: 900, fontSize: 30 * unit, display: 'flex', alignItems: 'center', zIndex: 2}}>{p.tag ?? 'LIVE'}</div>
+				<div style={{display: 'flex', gap: 48 * unit, transform: `translateX(${x + 160 * unit}px)`, whiteSpace: 'nowrap'}}>
+					{row.map((it, i) => {
+						const down = it.v.trim().startsWith('-');
+						return (
+							<span key={i} style={{fontFamily: FONT, fontWeight: 800, fontSize: 32 * unit, color: C.white}}>
+								{it.s} <span style={{color: down ? C.red : C.green}}>{down ? '▼' : '▲'} {it.v}</span>
+							</span>
+						);
+					})}
+				</div>
+			</div>
 		</AbsoluteFill>
 	);
 };
@@ -446,6 +503,8 @@ export const FX: Record<string, {comp: React.FC<FxArgs>; layers: ('behind' | 'fr
 	'edit-timeline': {comp: EditTimeline, layers: ['front']},
 	'photo-3d': {comp: Photo3D, layers: ['front']},
 	'map-flyto': {comp: MapFlyTo, layers: ['front']},
+	clone: {comp: CloneLabel, layers: ['front']},
+	ticker: {comp: Ticker, layers: ['front']},
 };
 
 const CueView: React.FC<{cue: Cue; layer: 'behind' | 'front'; faces: Face[]; src?: string}> = ({cue, layer, faces, src}) => {

@@ -18,11 +18,17 @@ Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram
 ## Skills (Tier 2)
 | Skill | What it does |
 |---|---|
-| `awk-effects` | 15 effects: text behind the head, glass widgets, spotlight, checklist, orbiting words or photos, clones, ₹ counter, iPhone notification, news cut, freeze-frame callout, bar chart, editing timeline, 3D photo, map fly-to, plus 8 transitions — timed by seconds or by a spoken word |
+| `awk-effects` | 15 effects: text behind the head, glass widgets, spotlight, checklist, orbiting words or photos, clones, ₹ counter, iPhone notification, news cut, freeze-frame callout, bar chart, editing timeline, 3D photo, map fly-to, stock ticker, built-in world map, plus 8 transitions — timed by seconds or by a spoken word |
 | `awk-auto-zoom` | Punch-in zooms on cuts and on chosen words, centred on the face |
 | `awk-reframe` | 16:9 → 9:16 / 1:1 / 4:5 that follows the speaker's face |
 | `awk-multi-export` | Instagram, YouTube Shorts (different endings), WhatsApp and 16:9 versions from one edit |
 | `awk-broll-finder` | Stock-footage plan per line with Pexels / Pixabay / Envato links; downloads free Pexels clips and logs licences |
+
+## Skills (Tier 3)
+| Skill | What it does |
+|---|---|
+| `awk-carousel` | Instagram carousel (1080×1350 PNG slides) + animated video carousel from one JSON |
+| `awk-finance-edit` | Recipe: raw finance talking head → reel with ₹ counters, charts, ticker, bank notifications, checklist |
 
 A typical reel: `auto-cut → auto-zoom → effects → captions → sfx → audio-master → multi-export`.
 Face tracking and the person matte use Apple Vision on your Mac (no upload, no API key).
