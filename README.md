@@ -4,6 +4,10 @@
 
 Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram](https://www.instagram.com/aiwalakapil) · [YouTube](https://www.youtube.com/@aiwalakapil)). Works with Hindi, Hinglish and English.
 
+[![Download ZIP](https://img.shields.io/badge/Download-ZIP-00E58F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)
+
+**[⬇️ Download ZIP](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)** (no Git needed) · or `git clone` below.
+
 ## Skills (Tier 1)
 | Skill | What it does |
 |---|---|
@@ -44,11 +48,22 @@ Tell Claude Code:
 Claude runs the skills in order and shows you what it removed before rendering.
 
 ## Install (macOS)
+**Option A: Git**
 ```bash
 brew install ffmpeg whisper-cpp node
 git clone https://github.com/aiwalakapil/awk-studio.git
 cd awk-studio && ./install.sh
 ```
+
+**Option B: Download ZIP (no Git)**
+1. Click **[Download ZIP](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)** (or the green **Code** button → **Download ZIP**).
+2. Unzip it and move the `awk-studio-main` folder somewhere permanent, e.g. your home folder. The skills are linked from this folder, so don't delete it later.
+3. In Terminal:
+```bash
+brew install ffmpeg whisper-cpp node
+cd ~/awk-studio-main && bash install.sh
+```
+To update later, download the ZIP again, replace the folder and run `bash install.sh` again.
 - **Whisper model:** download `ggml-large-v3-turbo.bin` from [huggingface.co/ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp) into `~/whisper-models/`, or point `AWK_WHISPER_MODEL` at it.
 - Restart Claude Code; the skills show up as `/awk-auto-cut`, `/awk-captions` and so on.
 
