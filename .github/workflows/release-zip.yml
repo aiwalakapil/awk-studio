@@ -1,0 +1,21 @@
+# Attaches awk-studio.zip to every published release, so the README's
+# Download ZIP button (releases/latest/download/awk-studio.zip) is counted by GitHub.
+name: Release ZIP
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - name: Build and upload awk-studio.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git archive --format=zip --prefix=awk-studio/ -o awk-studio.zip HEAD
+          gh release upload "${{ github.event.release.tag_name }}" awk-studio.zip --clobber

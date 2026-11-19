@@ -4,9 +4,13 @@
 
 Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram](https://www.instagram.com/aiwalakapil) · [YouTube](https://www.youtube.com/@aiwalakapil)). Works with Hindi, Hinglish and English.
 
-[![Download ZIP](https://img.shields.io/badge/Download-ZIP-00E58F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)
+<p align="center"><img src="docs/hero.gif" width="300" alt="awk-effects demo: checklist, ₹ counter, bar chart and breaking-news cut, all added by Claude Code"></p>
 
-**[⬇️ Download ZIP](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)** (no Git needed) · or `git clone` below.
+[![Download ZIP](https://img.shields.io/badge/Download-ZIP-00E58F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/aiwalakapil/awk-studio/releases/latest/download/awk-studio.zip)
+
+**[⬇️ Download ZIP](https://github.com/aiwalakapil/awk-studio/releases/latest/download/awk-studio.zip)** (no Git needed) · or `git clone` below.
+
+⭐ **Free hai. Kaam aaye to repo ko star kar do**, isse aur creators tak pahunchega.
 
 ## Skills (Tier 1)
 | Skill | What it does |
@@ -56,12 +60,12 @@ cd awk-studio && ./install.sh
 ```
 
 **Option B: Download ZIP (no Git)**
-1. Click **[Download ZIP](https://github.com/aiwalakapil/awk-studio/archive/refs/heads/main.zip)** (or the green **Code** button → **Download ZIP**).
-2. Unzip it and move the `awk-studio-main` folder somewhere permanent, e.g. your home folder. The skills are linked from this folder, so don't delete it later.
+1. Click **[Download ZIP](https://github.com/aiwalakapil/awk-studio/releases/latest/download/awk-studio.zip)** (the green **Code** button → **Download ZIP** also works; that folder is called `awk-studio-main`).
+2. Unzip it and move the `awk-studio` folder somewhere permanent, e.g. your home folder. The skills are linked from this folder, so don't delete it later.
 3. In Terminal:
 ```bash
 brew install ffmpeg whisper-cpp node
-cd ~/awk-studio-main && bash install.sh
+cd ~/awk-studio && bash install.sh
 ```
 To update later, download the ZIP again, replace the folder and run `bash install.sh` again.
 - **Whisper model:** download `ggml-large-v3-turbo.bin` from [huggingface.co/ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp) into `~/whisper-models/`, or point `AWK_WHISPER_MODEL` at it.
