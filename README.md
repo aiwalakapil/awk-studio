@@ -4,7 +4,7 @@
 
 Free skill pack from the **AI Creator Masterclass** by AI Wala Kapil ([Instagram](https://www.instagram.com/aiwalakapil) · [YouTube](https://www.youtube.com/@aiwalakapil)). Works with Hindi, Hinglish and English.
 
-<p align="center"><img src="docs/hero.gif" width="300" alt="awk-effects demo: checklist, ₹ counter, bar chart and breaking-news cut, all added by Claude Code"></p>
+<p align="center"><img src="docs/hero.gif" width="300" alt="Hindi + English word-highlight captions, then effects: checklist, ₹ counter and breaking-news cut, all added by Claude Code"></p>
 
 [![Download ZIP](https://img.shields.io/badge/Download-ZIP-00E58F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/aiwalakapil/awk-studio/releases/latest/download/awk-studio.zip)
 
